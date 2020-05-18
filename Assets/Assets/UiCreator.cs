@@ -1,12 +1,19 @@
-﻿using UnityEngine;
+﻿using System;
+using System.IO;
+using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class UiCreator : MonoBehaviour
 {
     private Color nextColor = Color.white;
+    private Boolean isMouseButtonPressed = false;
+    private GameObject[,] grid = new GameObject[16,16];
     public ColorPicker picker;
     public GameObject panel;
 
+    private Texture2D texture;
+    
     private void Awake()
     {
         CreateUi();
@@ -14,7 +21,44 @@ public class UiCreator : MonoBehaviour
 
     void Start ()
     {
+        picker.CurrentColor = Color.white;
         picker.onValueChanged.AddListener(color => { nextColor = color; });
+    }
+
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
+            isMouseButtonPressed = true;
+        if (Input.GetMouseButtonUp(0))
+            isMouseButtonPressed = false;
+    }
+
+    public void Clear()
+    {
+        picker.CurrentColor = Color.white;
+        nextColor = Color.white;
+        foreach (var button in grid)
+        {
+            button.GetComponent<Image>().color = nextColor;
+        }
+    }
+
+    public void Save()
+    {
+        var a = new Texture2D(16, 16);
+        
+        for (var x = 0; x < 16; x++)
+        {
+            for (var y = 0; y < 16; y++)
+                a.SetPixel(y, x, grid[y, x].GetComponent<Image>().color);
+        }
+
+        texture = a;
+        texture.Apply();
+        // todo: send to backend
+
+        var bytes = ImageConversion.EncodeToPNG(texture);
+        File.WriteAllBytes("lol.png", bytes);
     }
     
     private void CreateUi()
@@ -24,8 +68,8 @@ public class UiCreator : MonoBehaviour
         button.gameObject.AddComponent<CanvasRenderer>();
         button.AddComponent<Image>();
         button.gameObject.AddComponent<Button>();
-        //button.transform.localScale = new Vector3(0.1f, 0.1f);
-        
+        button.AddComponent<EventTrigger>();
+
         for (var x = 0; x < 16; x++)
         {
             for (var y = 0; y < 16; y++)
@@ -33,17 +77,20 @@ public class UiCreator : MonoBehaviour
                 var newButton = Instantiate(button);
                 newButton.GetComponent<RectTransform>().SetParent(panel.transform);
                 newButton.GetComponent<Button>().onClick.AddListener(() => newButton.GetComponent<Image>().color = nextColor);
+                var trigger = newButton.GetComponent<EventTrigger>();
+                var entry = new EventTrigger.Entry();
+                entry.eventID = EventTriggerType.PointerEnter;
+                entry.callback.AddListener( (eventData) =>
+                {
+                    if (isMouseButtonPressed)
+                        newButton.GetComponent<Image>().color = nextColor;
+                });
+                trigger.triggers.Add(entry);
+
+                grid[y, x] = newButton;
             }
         }
+        Destroy(button);
     }
-    
-    // private static Color nextColor(Color current)
-    // {
-    //     if (current == Color.white) return Color.black;
-    //     if (current == Color.black) return Color.red;
-    //     if (current == Color.red) return Color.green;
-    //     if (current == Color.green) return Color.blue;
-    //     if (current == Color.blue) return Color.white;
-    //     return Color.white;
-    // }
+
 }
