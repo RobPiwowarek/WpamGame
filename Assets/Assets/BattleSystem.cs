@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -43,8 +44,28 @@ public class BattleSystem : MonoBehaviour
     IEnumerator SetupBattle()
     {
         GameObject playerGO = Instantiate(playerPrefab, playerBattleStation);
+        playerGO.SetActive(false);
         playerUnit = playerGO.GetComponent<Unit>();
         playerUnit.transform.parent = null;
+
+        SpriteRenderer spriteRenderer = playerGO.GetComponent<SpriteRenderer>();
+
+        if (File.Exists("texture.png"))
+        {
+            Texture2D savedPlayerTexture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+
+            ImageConversion.LoadImage(savedPlayerTexture, File.ReadAllBytes("texture.png"), false);
+            
+            savedPlayerTexture.filterMode = FilterMode.Point;
+            savedPlayerTexture.Apply();
+            
+            // pivot is percentage 0.5f 0.5f is center
+            Sprite sprite = Sprite.Create(savedPlayerTexture, new Rect(0, 0, savedPlayerTexture.width, savedPlayerTexture.height), new Vector2(0.5f, 0.5f));
+            spriteRenderer.sprite = sprite;
+        }
+        
+        playerGO.transform.localScale = new Vector3(16, 16); // totally calculated value
+        playerGO.SetActive(true);
 
         GameObject enemyGO = Instantiate(enemyPrefab, enemyBattleStation);
         enemyUnit = enemyGO.GetComponent<Unit>();

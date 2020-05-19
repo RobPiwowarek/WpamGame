@@ -2,6 +2,7 @@
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UiCreator : MonoBehaviour
@@ -25,6 +26,11 @@ public class UiCreator : MonoBehaviour
         picker.onValueChanged.AddListener(color => { nextColor = color; });
     }
 
+    public void Quit()
+    {
+        SceneManager.LoadScene(1);
+    }
+    
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))
@@ -45,12 +51,13 @@ public class UiCreator : MonoBehaviour
 
     public void Save()
     {
-        var a = new Texture2D(16, 16);
+        var a = new Texture2D(16, 16, TextureFormat.RGBA32,false);
+        a.filterMode = FilterMode.Point;
         
         for (var x = 0; x < 16; x++)
         {
             for (var y = 0; y < 16; y++)
-                a.SetPixel(y, x, grid[y, x].GetComponent<Image>().color);
+                a.SetPixel(y, 15-x, grid[y, x].GetComponent<Image>().color);
         }
 
         texture = a;
@@ -58,7 +65,7 @@ public class UiCreator : MonoBehaviour
         // todo: send to backend
 
         var bytes = ImageConversion.EncodeToPNG(texture);
-        File.WriteAllBytes("lol.png", bytes);
+        File.WriteAllBytes("texture.png", bytes);
     }
     
     private void CreateUi()
