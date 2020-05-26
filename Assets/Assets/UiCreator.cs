@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -9,7 +8,7 @@ public class UiCreator : MonoBehaviour
 {
     private Color nextColor = Color.white;
     private Boolean isMouseButtonPressed = false;
-    private GameObject[,] grid = new GameObject[16,16];
+    private GameObject[,] grid = new GameObject[32,32];
     public ColorPicker picker;
     public GameObject panel;
 
@@ -51,13 +50,13 @@ public class UiCreator : MonoBehaviour
 
     public void Save()
     {
-        var a = new Texture2D(16, 16, TextureFormat.RGBA32,false);
+        var a = new Texture2D(32, 32, TextureFormat.RGBA32,false);
         a.filterMode = FilterMode.Point;
         
-        for (var x = 0; x < 16; x++)
+        for (var x = 0; x < 32; x++)
         {
-            for (var y = 0; y < 16; y++)
-                a.SetPixel(y, 15-x, grid[y, x].GetComponent<Image>().color);
+            for (var y = 0; y < 32; y++)
+                a.SetPixel(y, 31-x, grid[y, x].GetComponent<Image>().color);
         }
 
         texture = a;
@@ -65,9 +64,12 @@ public class UiCreator : MonoBehaviour
         // todo: send to backend
 
         var bytes = ImageConversion.EncodeToPNG(texture);
-        File.WriteAllBytes("texture.png", bytes);
+        var base64 = Convert.ToBase64String(bytes);
+
+        StartCoroutine(BackendClient.saveTexture(PlayerPrefs.GetString("login"), PlayerPrefs.GetString("password"),
+            PlayerPrefs.GetString("save-texture-address"), base64));
     }
-    
+
     private void CreateUi()
     {
         var button = new GameObject("Button");
@@ -77,9 +79,9 @@ public class UiCreator : MonoBehaviour
         button.gameObject.AddComponent<Button>();
         button.AddComponent<EventTrigger>();
 
-        for (var x = 0; x < 16; x++)
+        for (var x = 0; x < 32; x++)
         {
-            for (var y = 0; y < 16; y++)
+            for (var y = 0; y < 32; y++)
             {
                 var newButton = Instantiate(button);
                 newButton.GetComponent<RectTransform>().SetParent(panel.transform);

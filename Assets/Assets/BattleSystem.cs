@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -50,21 +51,25 @@ public class BattleSystem : MonoBehaviour
 
         SpriteRenderer spriteRenderer = playerGO.GetComponent<SpriteRenderer>();
 
-        if (File.Exists("texture.png"))
-        {
-            Texture2D savedPlayerTexture = new Texture2D(16, 16, TextureFormat.RGBA32, false);
+        var texture = PlayerPrefs.GetString("texture");
 
-            ImageConversion.LoadImage(savedPlayerTexture, File.ReadAllBytes("texture.png"), false);
-            
+        if (texture == null)
+        {
+            Debug.Log("Couldnt load texture or texture not defined");
+        }
+        else
+        {
+            Texture2D savedPlayerTexture = new Texture2D(32, 32, TextureFormat.RGBA32, false);
+            ImageConversion.LoadImage(savedPlayerTexture, Convert.FromBase64String(texture), false);
             savedPlayerTexture.filterMode = FilterMode.Point;
             savedPlayerTexture.Apply();
-            
             // pivot is percentage 0.5f 0.5f is center
             Sprite sprite = Sprite.Create(savedPlayerTexture, new Rect(0, 0, savedPlayerTexture.width, savedPlayerTexture.height), new Vector2(0.5f, 0.5f));
             spriteRenderer.sprite = sprite;
+            // totally calculated value
+            playerGO.transform.localScale = new Vector3(12, 12); 
         }
-        
-        playerGO.transform.localScale = new Vector3(16, 16); // totally calculated value
+
         playerGO.SetActive(true);
 
         GameObject enemyGO = Instantiate(enemyPrefab, enemyBattleStation);
