@@ -94,8 +94,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 475d8d7ed9646504888a5702b5d7ed33, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  unitName: bruh
+  unitName: player
+  points: 10
   unitLevel: 1
-  damage: 11
-  maxHP: 111
-  currentHP: 111
+  damage: 10
+  healingPower: 10
+  maxHP: 100
+  currentHP: 100
+  maxEnergy: 3
+  currentEnergy: 3
+  armor: 1
+  currentArmor: 1
+  criticalChance: 20
+  evasionChance: 20
+  stunChance: 20
+  stunned: 0
+  guarding: 0
