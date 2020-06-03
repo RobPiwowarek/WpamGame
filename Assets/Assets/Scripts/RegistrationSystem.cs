@@ -63,6 +63,8 @@ public class RegistrationSystem : MonoBehaviour
                     PlayerPrefs.SetString("login", email);
                     PlayerPrefs.SetString("password", password);
                     StartCoroutine(BackendClient.loadTexture(email, password, Consts.loadTextureAddress));
+                    StartCoroutine(BackendClient.loadStats(PlayerPrefs.GetString("login"), PlayerPrefs.GetString("password"), Consts.loadStatsAddress));
+                    yield return new WaitForSeconds(1);
                     SceneManager.LoadScene(1);
                 }
                 else

@@ -50,8 +50,31 @@ public class BattleSystem : MonoBehaviour
     public AudioSource denied;
     public AudioSource victory;
     public AudioSource defeat;
+    public AudioSource faint;
 
     // Start is called before the first frame update
+    private void Update()
+    {
+        if (state == BattleState.LOST)
+        {
+            var renderer = playerUnit.transform.GetComponent<SpriteRenderer>();
+            var color = renderer.color;
+            var new_color = new Color(color.r, color.g, color.b, color.a * 63/64);
+        
+            renderer.color = new_color;
+            playerUnit.transform.position -= new Vector3(0, 0.1f);
+        }
+        else if (state == BattleState.WON)
+        {
+            var renderer = enemyUnit.transform.GetComponent<SpriteRenderer>();
+            var color = renderer.color;
+            var new_color = new Color(color.r, color.g, color.b, color.a * 63/64);
+        
+            renderer.color = new_color;
+            enemyUnit.transform.position -= new Vector3(0, 0.1f);
+        }
+    }
+
     void Start()
     {
         state = BattleState.START;
@@ -241,6 +264,8 @@ public class BattleSystem : MonoBehaviour
         state = BattleState.ANIMATION;
         dialogueText.text = enemyUnit.unitName + " attacks!";
         
+        lightAttack.PlayDelayed(0.75f);
+
         animationPerformer.LightAttack(
             enemyUnit,
             playerUnit,
@@ -284,6 +309,8 @@ public class BattleSystem : MonoBehaviour
             dialogueText.text = "You won the battle! 5 points granted!";
             GetComponent<AudioSource>().Stop();
             victory.Play();
+            faint.Play();
+            enemyUnit.GetComponent<SpriteRenderer>().color = Color.black;
             var points = PlayerPrefs.GetInt("points") + 5;
             PlayerPrefs.SetInt("points", points);
             
@@ -294,7 +321,9 @@ public class BattleSystem : MonoBehaviour
         else if (state == BattleState.LOST)
         {
             dialogueText.text = "You were defeated.";
+            playerUnit.GetComponent<SpriteRenderer>().color = Color.black;
             defeat.Play();
+            faint.Play();
         }
     }
 
